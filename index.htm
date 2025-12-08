@@ -63,6 +63,9 @@
         const IconHome = ({ size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         );
+        const IconLightbulb = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5a6 6 0 0 0-11 0c0 1.5.5 2.5 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+        );
 
         // --- Data ---
         const WORD_LIST = [
@@ -77,6 +80,12 @@
             "薄荷朱古力雪糕", "蛋糕", "芒果布丁", "曲奇", "糖果", "朱古力", "啫喱", "泡芙", "格仔餅",
             "老虎", "大象", "長頸鹿", "企鵝", "熊貓", "海豚", "兔子", "烏龜", "馬", "蛇", "青蛙",
             "白紙", "計數機", "廁紙", "充電器", "火牛", "滑鼠", "鍵盤"
+        ];
+
+        const HINT_LIST = [
+            "類別", "味道", "形狀", "大小", "顔色", 
+            "聲音", "在哪裏找到？", "質感", "什麽時候見到？", 
+            "物料", "誰會有?", "用途", "特徵"
         ];
 
         // --- Logic ---
@@ -98,6 +107,7 @@
             const [timeLimit, setTimeLimit] = useState(60);
             const [isPaused, setIsPaused] = useState(false);
             const [modeName, setModeName] = useState('');
+            const [showHint, setShowHint] = useState(false);
 
             useEffect(() => {
                 setCurrentDeck(shuffleArray(WORD_LIST));
@@ -125,6 +135,7 @@
                 setModeName(name);
                 setGameState('playing');
                 setIsPaused(false);
+                setShowHint(false);
             };
 
             const manualShuffle = () => {
@@ -231,21 +242,63 @@
 
                 return (
                     <div className="fixed inset-0 bg-indigo-50 flex flex-col p-2 md:p-4 safe-area-inset overflow-hidden">
+                        
+                        {/* Hint Modal Overlay */}
+                        {showHint && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowHint(false)}>
+                                <div className="bg-white rounded-2xl shadow-2xl p-5 w-full max-w-sm border-4 border-yellow-200 relative" onClick={e => e.stopPropagation()}>
+                                    <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                        <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                            <div className="bg-yellow-100 p-1.5 rounded-full"><IconLightbulb className="text-yellow-600" size={20} /></div>
+                                            描述方向（如適用）
+                                        </h3>
+                                        <button onClick={() => setShowHint(false)} className="p-1 rounded-full hover:bg-gray-100">
+                                            <IconX size={24} className="text-gray-500" />
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                                        {HINT_LIST.map((hint, idx) => (
+                                            <div key={idx} className="bg-yellow-50 text-yellow-800 px-3 py-2 rounded-lg text-sm md:text-base font-bold text-center border border-yellow-100 shadow-sm">
+                                                {hint}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-4 text-center">
+                                        <button onClick={() => setShowHint(false)} className="bg-blue-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">
+                                            明白了！
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Top Bar */}
                         <div className="w-full max-w-4xl mx-auto flex justify-between items-center mb-2 shrink-0 h-12 md:h-16">
-                            <div className="bg-white px-3 md:px-4 py-1 md:py-2 rounded-full shadow font-bold text-gray-600 flex items-center gap-2 text-sm md:text-base">
-                                <IconTrophy className="text-yellow-500" size={16} />
-                                <span>{score}</span>
+                            <div className="flex items-center gap-2">
+                                <div className="bg-white px-3 md:px-4 py-1 md:py-2 rounded-full shadow font-bold text-gray-600 flex items-center gap-2 text-sm md:text-base">
+                                    <IconTrophy className="text-yellow-500" size={16} />
+                                    <span>{score}</span>
+                                </div>
+                                <div className="hidden md:block bg-white px-3 md:px-4 py-1 md:py-2 rounded-full shadow font-bold text-gray-600 text-sm md:text-base">
+                                    {modeName}
+                                </div>
                             </div>
-                            <div className="bg-white px-3 md:px-4 py-1 md:py-2 rounded-full shadow font-bold text-gray-600 text-sm md:text-base">
-                                {modeName}
+
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => setShowHint(true)}
+                                    className={`bg-yellow-100 hover:bg-yellow-200 p-2 rounded-full text-yellow-600 border-2 border-yellow-200 shadow-sm ${touchButtonStyle}`}
+                                    title="提示"
+                                >
+                                    <IconLightbulb size={20} />
+                                </button>
+                                <button 
+                                    onClick={endGame}
+                                    className={`bg-gray-200 hover:bg-gray-300 p-2 rounded-full text-gray-600 ${touchButtonStyle}`}
+                                >
+                                    <IconX size={20} />
+                                </button>
                             </div>
-                            <button 
-                                onClick={endGame}
-                                className={`bg-gray-200 hover:bg-gray-300 p-2 rounded-full text-gray-600 ${touchButtonStyle}`}
-                            >
-                                <IconX size={20} />
-                            </button>
                         </div>
 
                         {/* Game Area */}

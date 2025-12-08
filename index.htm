@@ -1,0 +1,273 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Shuffle, Check, X, Clock, Trophy, RotateCcw, Home, Timer } from 'lucide-react';
+
+const WORD_LIST = [
+  "公園", "超市", "學校", "醫院", "海灘", "圖書館", "街市", "餐廳", "動物園", "郵局", "海洋公園",
+  "開心", "傷心", "生氣", "害怕", "緊張", "興奮", "失望", "感動", "驚訝", "平靜",
+  "跑", "跳", "坐", "切", "揮手", "拍手", "轉身", "彈", "拉", "拍照",
+  "月餅", "湯圓", "年糕", "雞蛋仔", "蘿蔔糕", "粽", "砵仔糕", "皮蛋", "蛋撻", "生果籃",
+  "積木", "洋娃娃", "遙控車", "拼圖", "皮球", "風箏", "泥膠",
+  "錘", "螺絲批", "鉗", "鋸", "扳手", "卷尺", "電鑽", "水平尺", "鏟",
+  "指南針", "鉛筆", "原子筆", "擦子膠", "間尺", "剪刀", "膠水", "筆盒", "蠟筆", "便條紙", "釘書機", "熒光筆",
+  "電視機", "電腦", "手機", "電飯煲", "雪櫃", "洗衣機", "風扇", "微波爐", "燙斗", "吸塵機",
+  "薄荷朱古力雪糕", "蛋糕", "芒果布丁", "曲奇", "糖果", "朱古力", "啫喱", "泡芙", "格仔餅",
+  "老虎", "大象", "長頸鹿", "企鵝", "熊貓", "海豚", "兔子", "烏龜", "馬", "蛇", "青蛙",
+  "白紙", "計數機", "廁紙", "充電器", "火牛", "滑鼠", "鍵盤"
+];
+
+// Fisher-Yates Shuffle Algorithm
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+const App = () => {
+  const [gameState, setGameState] = useState('menu'); // menu, playing, result
+  const [currentDeck, setCurrentDeck] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLimit, setTimeLimit] = useState(60);
+  const [isPaused, setIsPaused] = useState(false);
+  const [modeName, setModeName] = useState('');
+
+  // Initial shuffle on load
+  useEffect(() => {
+    setCurrentDeck(shuffleArray(WORD_LIST));
+  }, []);
+
+  // Timer Logic
+  useEffect(() => {
+    let interval = null;
+    if (gameState === 'playing' && timeLeft > 0 && !isPaused) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && gameState === 'playing') {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [gameState, timeLeft, isPaused]);
+
+  const startGame = (limit, name) => {
+    const shuffled = shuffleArray(WORD_LIST);
+    setCurrentDeck(shuffled);
+    setCurrentIndex(0);
+    setScore(0);
+    setTimeLimit(limit);
+    setTimeLeft(limit);
+    setModeName(name);
+    setGameState('playing');
+    setIsPaused(false);
+  };
+
+  const manualShuffle = () => {
+    setCurrentDeck(shuffleArray(WORD_LIST));
+    alert("卡片已重新洗牌！");
+  };
+
+  const handleNext = (correct) => {
+    if (correct) {
+      setScore((prev) => prev + 1);
+    }
+    
+    if (currentIndex < currentDeck.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      setTimeLeft(timeLimit);
+    } else {
+      endGame();
+    }
+  };
+
+  const endGame = () => {
+    setGameState('result');
+  };
+
+  const returnToMenu = () => {
+    setGameState('menu');
+  };
+
+  // Helper to adjust font size based on text length
+  const getFontSizeClass = (text) => {
+    if (!text) return 'text-6xl';
+    if (text.length <= 2) return 'text-8xl md:text-9xl';
+    if (text.length <= 4) return 'text-6xl md:text-8xl';
+    if (text.length <= 6) return 'text-5xl md:text-7xl';
+    return 'text-4xl md:text-6xl';
+  };
+
+  // Touch optimized button style
+  const touchButtonStyle = "active:scale-95 transition-transform touch-manipulation select-none";
+
+  // Render Screens
+  if (gameState === 'menu') {
+    return (
+      <div className="fixed inset-0 bg-blue-50 flex flex-col items-center justify-center p-4 font-sans overflow-y-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 max-w-md w-full text-center border-4 border-blue-200">
+          <h1 className="text-3xl md:text-4xl font-black text-blue-600 mb-2 tracking-wider">超級大電視</h1>
+          <p className="text-gray-500 mb-6 text-base md:text-lg">考考你描述東西的能力</p>
+          
+          <div className="space-y-3">
+            <button 
+              onClick={() => startGame(60, '輕鬆模式')}
+              className={`w-full bg-green-400 hover:bg-green-500 text-white text-lg md:text-xl font-bold py-3 md:py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-3 ${touchButtonStyle}`}
+            >
+              <div className="bg-white/20 p-2 rounded-full"><Timer size={20} /></div>
+              容易 (60秒)
+            </button>
+
+            <button 
+              onClick={() => startGame(30, '挑戰模式')}
+              className={`w-full bg-yellow-400 hover:bg-yellow-500 text-white text-lg md:text-xl font-bold py-3 md:py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-3 ${touchButtonStyle}`}
+            >
+              <div className="bg-white/20 p-2 rounded-full"><Timer size={20} /></div>
+              中等 (30秒)
+            </button>
+
+            <button 
+              onClick={() => startGame(15, '極速模式')}
+              className={`w-full bg-red-400 hover:bg-red-500 text-white text-lg md:text-xl font-bold py-3 md:py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-3 ${touchButtonStyle}`}
+            >
+              <div className="bg-white/20 p-2 rounded-full"><Timer size={20} /></div>
+              困難 (15秒)
+            </button>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <button 
+              onClick={manualShuffle}
+              className={`text-gray-500 hover:text-blue-500 font-medium flex items-center justify-center gap-2 mx-auto transition-colors ${touchButtonStyle}`}
+            >
+              <Shuffle size={20} />
+              手動洗牌
+            </button>
+            <p className="text-xs text-gray-400 mt-2">共 {WORD_LIST.length} 個詞彙</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === 'playing') {
+    const isTimeUp = timeLeft === 0;
+    const progress = (timeLeft / timeLimit) * 100;
+    const currentWord = currentDeck[currentIndex];
+    
+    let timerColor = 'bg-green-400';
+    if (progress < 60) timerColor = 'bg-yellow-400';
+    if (progress < 30) timerColor = 'bg-red-400';
+
+    return (
+      <div className="fixed inset-0 bg-indigo-50 flex flex-col p-2 md:p-4 safe-area-inset overflow-hidden">
+        {/* Top Bar - Compact on Mobile */}
+        <div className="w-full max-w-4xl mx-auto flex justify-between items-center mb-2 shrink-0 h-12 md:h-16">
+          <div className="bg-white px-3 md:px-4 py-1 md:py-2 rounded-full shadow font-bold text-gray-600 flex items-center gap-2 text-sm md:text-base">
+            <Trophy className="text-yellow-500" size={16} />
+            <span>{score}</span>
+          </div>
+          <div className="bg-white px-3 md:px-4 py-1 md:py-2 rounded-full shadow font-bold text-gray-600 text-sm md:text-base">
+            {modeName}
+          </div>
+          <button 
+            onClick={endGame}
+            className={`bg-gray-200 hover:bg-gray-300 p-2 rounded-full text-gray-600 ${touchButtonStyle}`}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Game Area - Flex-1 to fill available space */}
+        <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col justify-center min-h-0 mb-4">
+          <div className="bg-white w-full h-full rounded-2xl md:rounded-3xl shadow-lg flex flex-col items-center justify-center relative overflow-hidden border-4 md:border-8 border-white ring-2 md:ring-4 ring-blue-100 p-4">
+            
+            {/* Timer Bar */}
+            <div className="absolute top-0 left-0 w-full h-2 md:h-3 bg-gray-100">
+              <div 
+                className={`h-full transition-all duration-1000 ease-linear ${timerColor}`} 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+
+            {isTimeUp ? (
+              <div className="text-center animate-bounce flex flex-col items-center justify-center h-full">
+                <Clock size={60} className="text-red-400 mb-2 md:mb-4" />
+                <h2 className="text-4xl md:text-7xl font-black text-red-500">時間到!</h2>
+                <p className="text-gray-400 mt-2 text-base md:text-xl">請跳過或按下一題</p>
+              </div>
+            ) : (
+              <div className="text-center w-full h-full flex flex-col items-center justify-center relative">
+                <span className="text-gray-300 text-sm md:text-lg absolute top-0 right-0 font-mono">
+                   #{currentIndex + 1}
+                </span>
+                <h2 className={`${getFontSizeClass(currentWord)} font-black text-gray-800 tracking-tight leading-snug break-words px-2`}>
+                  {currentWord}
+                </h2>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Controls - Fixed height at bottom */}
+        <div className="w-full max-w-4xl mx-auto grid grid-cols-2 gap-3 md:gap-6 h-24 md:h-40 shrink-0 mb-2 md:mb-4">
+          <button 
+            onClick={() => handleNext(false)}
+            className={`bg-red-100 active:bg-red-200 border-b-4 md:border-b-8 border-red-200 text-red-500 rounded-2xl md:rounded-3xl flex flex-col items-center justify-center shadow-sm active:border-b-0 active:translate-y-1 md:active:translate-y-2 transition-all ${touchButtonStyle}`}
+          >
+            <X size={32} className="md:w-12 md:h-12" strokeWidth={3} />
+            <span className="font-bold text-lg md:text-xl mt-1">跳過</span>
+          </button>
+          
+          <button 
+            onClick={() => handleNext(true)}
+            className={`bg-green-100 active:bg-green-200 border-b-4 md:border-b-8 border-green-200 text-green-500 rounded-2xl md:rounded-3xl flex flex-col items-center justify-center shadow-sm active:border-b-0 active:translate-y-1 md:active:translate-y-2 transition-all ${touchButtonStyle}`}
+          >
+            <Check size={32} className="md:w-12 md:h-12" strokeWidth={3} />
+            <span className="font-bold text-lg md:text-xl mt-1">答對!</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === 'result') {
+    return (
+      <div className="fixed inset-0 bg-yellow-50 flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
+        <div className="bg-white p-6 md:p-10 rounded-3xl shadow-xl max-w-lg w-full border-4 border-yellow-100">
+          <Trophy size={60} className="text-yellow-400 mx-auto mb-4 md:mb-6" />
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">遊戲結束!</h2>
+          <p className="text-gray-500 mb-6 md:mb-8">做得好！來看看你的成績</p>
+          
+          <div className="bg-blue-50 rounded-2xl p-6 md:p-8 mb-6 md:mb-8 transform rotate-1 hover:rotate-0 transition-transform">
+            <div className="text-xs md:text-sm text-blue-400 font-bold uppercase tracking-wide mb-1">總得分</div>
+            <div className="text-6xl md:text-7xl font-black text-blue-600">{score}</div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <button 
+              onClick={returnToMenu}
+              className={`bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 md:py-4 px-4 rounded-xl flex items-center justify-center gap-2 ${touchButtonStyle}`}
+            >
+              <Home size={18} />
+              <span className="text-sm md:text-base">主選單</span>
+            </button>
+            <button 
+              onClick={() => startGame(timeLimit, modeName)}
+              className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 md:py-4 px-4 rounded-xl flex items-center justify-center gap-2 ${touchButtonStyle}`}
+            >
+              <RotateCcw size={18} />
+              <span className="text-sm md:text-base">再玩一次</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default App;

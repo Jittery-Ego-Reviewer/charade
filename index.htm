@@ -72,7 +72,7 @@
 
         // --- Data ---
         const WORD_LIST = [
-            "公園", "超級市場", "學校", "醫院", "沙灘", "圖書館", "街市", "餐廳", "動物園", "郵局", "海洋公園", "地鐵站"
+            "公園", "超級市場", "學校", "醫院", "沙灘", "圖書館", "街市", "餐廳", "動物園", "郵局", "海洋公園", "地鐵站",
             "開心", "傷心", "生氣", "害怕", "緊張", "興奮", "失望", "感動", "驚訝", "平靜",
             "跑", "跳", "坐", "切", "揮手", "拍手", "轉身", "彈", "拉", "拍照",
             "月餅", "湯圓", "年糕", "雞蛋仔", "蘿蔔糕", "粽/糉",
@@ -80,15 +80,9 @@
             "錘", "螺絲批", "指甲鉗", "鋸", "電鑽", "鏟",
             "指南針", "鉛筆", "原子筆", "擦子膠", "間尺", "剪刀", "膠水", "筆盒", "蠟筆", "便條紙", "釘書機", "熒光筆",
             "電視機", "電腦", "手機", "電飯煲", "雪櫃", "洗衣機", "風扇", "微波爐", "燙斗", "吸塵機",
-            "薄荷朱古力雪糕", "蛋糕", "芒果布丁", "曲奇", "糖果", "朱古力", "啫喱", "雞蛋仔", "蛋撻"
-            "老虎", "大象", "長頸鹿", "企鵝", "熊貓", "海豚", "兔子", "烏龜", "馬", "蛇", "青蛙", "狐狸"
+            "薄荷朱古力雪糕", "蛋糕", "芒果布丁", "曲奇", "糖果", "朱古力", "啫喱", "雞蛋仔", "蛋撻",
+            "老虎", "大象", "長頸鹿", "企鵝", "熊貓", "海豚", "兔子", "烏龜", "馬", "蛇", "青蛙", "狐狸",
             "熒光筆", "文件夾", "鉛筆", "原子筆", "釘書機", "白膠漿", "漿糊筆", "膠紙", "萬字夾"
-        ];
-
-        const HINT_LIST = [
-            "類別", "味道", "形狀", "大小", "顔色", 
-            "聲音", "在哪裏找到？", "質感", "什麽時候見到？", 
-            "物料", "誰會有?", "用途", "特徵"
         ];
 
         // --- Logic ---
@@ -263,18 +257,29 @@
                                     <div className="flex justify-between items-center mb-4 border-b pb-2">
                                         <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                             <div className="bg-yellow-100 p-1.5 rounded-full"><IconLightbulb className="text-yellow-600" size={20} /></div>
-                                            描述方向（如適用）
+                                            怎樣描述
                                         </h3>
                                         <button onClick={() => setShowHint(false)} className="p-1 rounded-full hover:bg-gray-100">
                                             <IconX size={24} className="text-gray-500" />
                                         </button>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
-                                        {HINT_LIST.map((hint, idx) => (
-                                            <div key={idx} className="bg-yellow-50 text-yellow-800 px-3 py-2 rounded-lg text-sm md:text-base font-bold text-center border border-yellow-100 shadow-sm">
-                                                {hint}
+                                    <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto text-left">
+                                        <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-sm">
+                                            <div className="font-black text-blue-800 mb-1 text-lg">種類</div>
+                                            <div className="text-blue-700 font-medium text-sm md:text-base">屬於...？</div>
+                                        </div>
+                                        <div className="bg-green-50 p-3 rounded-xl border border-green-100 shadow-sm">
+                                            <div className="font-black text-green-800 mb-1 text-lg">用途</div>
+                                            <div className="text-green-700 font-medium text-sm md:text-base leading-relaxed">
+                                                何時用？在哪裏用？誰用？<br/>如何用？為何用？用來做甚麼？
                                             </div>
-                                        ))}
+                                        </div>
+                                        <div className="bg-purple-50 p-3 rounded-xl border border-purple-100 shadow-sm">
+                                            <div className="font-black text-purple-800 mb-1 text-lg">特徵</div>
+                                            <div className="text-purple-700 font-medium text-sm md:text-base leading-relaxed">
+                                                顔色？形狀？大小？<br/>氣味/味道？摸起來感覺如何？
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="mt-4 text-center">
                                         <button onClick={() => setShowHint(false)} className="bg-blue-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">
